@@ -1,12 +1,11 @@
 import Services from "../services";
 import ServiceCard from "../components/serviceCard";
+import Title from "../components/title";
 
 const Home = () => {
   return (
     <div className="flex flex-col px-5  max-w-full text-[#6E43F0] ">
-      <h1 className=" font-[Jaini] flex justify-center pt-7 text-4xl ">
-        BarberTime
-      </h1>
+      <Title />
       <h2 className="flex justify-center py-4 italic text-lg text-[#858585]">
         Escolha um serviço
       </h2>

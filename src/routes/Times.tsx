@@ -1,6 +1,9 @@
 import { useBooking } from "../context/BookingContext";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { WEEK_DAYS } from "../utils/constants";
+import Title from "../components/title";
+import ConfirmButton from "../components/confirmButton";
 
 const Times = () => {
   const { date, setDate, time, setTime } = useBooking();
@@ -14,8 +17,6 @@ const Times = () => {
     day.setDate(today.getDate() + i);
     return day;
   });
-
-  const weekDays = ["dom", "seg", "ter", "qua", "qui", "sex", "sab"];
 
   const TIME_LIST = [
     "10:00",
@@ -65,9 +66,7 @@ const Times = () => {
 
   return (
     <div>
-      <h1 className=" font-[Jaini] flex justify-center pt-7 text-4xl text-[#6E43F0]">
-        BarberTime
-      </h1>
+      <Title />
       <h2 className="flex justify-center pt-10 italic text-lg text-[#858585]">
         Agende seu horário
       </h2>
@@ -92,7 +91,7 @@ const Times = () => {
               : "border-zinc-500/50"
           }`}
             >
-              <p>{weekDays[day.getDay()]}</p>
+              <p>{WEEK_DAYS[day.getDay()]}</p>
               <h1 className="text-2xl">{day.getDate()}</h1>
             </div>
           );
@@ -128,21 +127,12 @@ const Times = () => {
         })}
       </div>
       <div className="flex justify-center">
-        <button
+        <ConfirmButton
+          disabled={!time}
           onClick={() => {
             navigate("/Bookings");
           }}
-          disabled={!time}
-          className={`bg-[#DEE6FF] border border-zinc-500/50 p-2 px-5 rounded-xl text-[#6E43F0] font-semibold 
-    ${
-      !time
-        ? "opacity-50 cursor-not-allowed"
-        : "hover:bg-[#bcc5e0] cursor-pointer"
-    }
-  `}
-        >
-          Confirmar
-        </button>
+        />
       </div>
     </div>
   );

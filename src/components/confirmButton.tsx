@@ -1,9 +1,9 @@
 interface Props {
   disabled?: boolean;
   onClick: () => void;
-  text: string;
 }
-const ConfirmButton = ({ disabled, onClick, text }: Props) => (
+
+const ConfirmButton = ({ disabled, onClick }: Props) => (
   <button
     onClick={onClick}
     disabled={disabled}
@@ -14,7 +14,7 @@ const ConfirmButton = ({ disabled, onClick, text }: Props) => (
           : "hover:bg-[#bcc5e0] cursor-pointer"
       }`}
   >
-    {text}
+    Confirmar
   </button>
 );
 export default ConfirmButton;
