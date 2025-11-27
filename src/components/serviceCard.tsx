@@ -1,3 +1,6 @@
+import { useNavigate } from "react-router-dom";
+import { useBooking } from "../context/BookingContext";
+
 interface ServiceCardProps {
   name: string;
   description: string;
@@ -11,8 +14,10 @@ const ServiceCard = ({
   price,
   imageUrl,
 }: ServiceCardProps) => {
+  const { setService } = useBooking();
+  const navigate = useNavigate();
   return (
-    <div className=" bg-white rounded-2xl p-2 shadow-md border-1 border-zinc-500/50 my-2 mx-3  flex flex-row justify-between gap-3">
+    <div className=" text-[#6E43F0] bg-white rounded-2xl p-2 shadow-md border-1 border-zinc-500/50 my-2 mx-3  flex flex-row justify-between gap-3">
       <div className="flex gap-3 flex-row">
         <img
           src={imageUrl}
@@ -20,12 +25,18 @@ const ServiceCard = ({
           className="h-22 object-cover rounded-xl"
         />
         <div>
-          <h2 className="text-medium font-semibold text-[#6E43F0]">{name}</h2>
+          <h2 className="text-medium font-semibold ">{name}</h2>
           <p className="text-sm text-zinc-400 pr-1">{description}</p>
-          <p className="text-[#6E43F0] font-bold text-medium">€ {price}</p>
+          <p className=" font-bold text-medium">€ {price}</p>
         </div>
       </div>
-      <button className="bg-[#DEE6FF] cursor-pointer text-[#6E43F0] rounded-xl my-6 px-2 text-sm font-semibold border-1 border-zinc-500/50">
+      <button
+        onClick={() => {
+          setService({ name });
+          navigate("/Times");
+        }}
+        className="bg-[#DEE6FF]  hover:bg-[#bcc5e0] cursor-pointer rounded-xl my-6 px-2 text-sm font-semibold border-1 border-zinc-500/50"
+      >
         Reservar
       </button>
     </div>
