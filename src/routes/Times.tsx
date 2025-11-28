@@ -1,13 +1,16 @@
 import { useBooking } from "../context/BookingContext";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { WEEK_DAYS } from "../utils/constants";
 import Title from "../components/title";
 import ConfirmButton from "../components/confirmButton";
+import { collection, getDocs, query, where } from "firebase/firestore";
+import { db } from "../firebase";
 
 const Times = () => {
   const { date, setDate, time, setTime } = useBooking();
   const [selected, setSelected] = useState("");
+  const [bookedTimes, setBookedTimes] = useState<string[]>([]);
 
   const navigate = useNavigate();
 
@@ -32,16 +35,40 @@ const Times = () => {
     "17:30",
   ];
 
-  const bookedTimes = {
-    "2025-11-27": ["14:30"],
-  };
+  useEffect(() => {
+    const fetchBookedTimes = async () => {
+      if (!date) return;
+
+      // Formata a data para YYYY-MM-DD
+      const dateKey = date.toISOString().split("T")[0];
+
+      try {
+        const q = query(
+          collection(db, "bookings"),
+          where("date", "==", dateKey)
+        );
+
+        const querySnapshot = await getDocs(q);
+        const times: string[] = [];
+
+        querySnapshot.forEach((doc) => {
+          const data = doc.data();
+          if (data.time) times.push(data.time); // coleta os horários já reservados
+        });
+
+        console.log("Reservas encontradas para o dia", dateKey, times);
+        setBookedTimes(times);
+      } catch (error) {
+        console.error("Erro ao buscar reservas:", error);
+      }
+    };
+
+    fetchBookedTimes();
+  }, [date]);
 
   function formatDate(date: Date) {
     return date.toISOString().split("T")[0];
   }
-
-  const dateKey = date ? formatDate(date) : formatDate(today);
-  const blocked = bookedTimes[dateKey] || [];
 
   function timeToDate(date: Date, time: string) {
     const [hours, minutes] = time.split(":").map(Number);
@@ -51,11 +78,10 @@ const Times = () => {
   }
 
   const now = new Date();
-
   const currentDate = date || today;
 
   const availableTimes = TIME_LIST.filter((t) => {
-    if (blocked.includes(t)) return false;
+    if (bookedTimes.includes(t)) return false;
 
     if (formatDate(currentDate) === formatDate(today)) {
       return timeToDate(today, t) > now;
@@ -71,11 +97,11 @@ const Times = () => {
         Agende seu horário
       </h2>
 
-      <p className="pt-6  text-[#6E43F0] text-center text-medium pb-2  font-medium ">
+      <p className="pt-6 text-[#6E43F0] text-center text-medium pb-2 font-medium">
         Dias Disponíveis
       </p>
 
-      <div className="bg-[#DEE6FF] flex gap-2 p-5 mx-5 flex flex-row justify-center rounded-xl">
+      <div className="bg-[#DEE6FF] flex gap-2 p-5 mx-5 flex-row justify-center rounded-xl">
         {days.map((day, index) => {
           const isSelected =
             date && new Date(date).toDateString() === day.toDateString();
@@ -97,7 +123,8 @@ const Times = () => {
           );
         })}
       </div>
-      <p className="pt-6  text-[#6E43F0] text-center text-medium pb-2  font-medium ">
+
+      <p className="pt-6 text-[#6E43F0] text-center text-medium pb-2 font-medium">
         Horários
       </p>
 
@@ -112,27 +139,21 @@ const Times = () => {
                 setSelected(t);
                 setTime(t);
               }}
-              className={`
-          rounded-xl border p-2 mx-3 font-semibold transition-all
+              className={`rounded-xl border p-2 mx-3 font-semibold transition-all
           ${
             isSelected
               ? "bg-[#6E43F0] text-white border-[#6E43F0] scale-[1.03] shadow-lg"
               : "bg-white text-[#6E43F0] border-zinc-500/50 cursor-pointer"
-          }
-        `}
+          }`}
             >
               <p>{t}</p>
             </div>
           );
         })}
       </div>
+
       <div className="flex justify-center">
-        <ConfirmButton
-          disabled={!time}
-          onClick={() => {
-            navigate("/Bookings");
-          }}
-        />
+        <ConfirmButton disabled={!time} onClick={() => navigate("/Bookings")} />
       </div>
     </div>
   );

@@ -4,10 +4,12 @@ import { useNavigate } from "react-router-dom";
 import { formatFullDate } from "../utils/date";
 import { WEEK_NAMES } from "../utils/constants";
 import Title from "../components/title";
-import ConfirmButton from "../components/confirmButton";
+import { db } from "../firebase";
+import { collection, addDoc } from "firebase/firestore";
+import { auth } from "../firebase";
 
 const Booking = () => {
-  const { date, time, barber, setBarber } = useBooking();
+  const { service, date, time, barber, setBarber } = useBooking();
   const [selected, setSelected] = useState(barber || "");
   const navigate = useNavigate();
 
@@ -16,6 +18,30 @@ const Booking = () => {
   const handleSelect = (name: string) => {
     setSelected(name);
     setBarber(name);
+  };
+
+  const handleBooking = async () => {
+    if (!auth.currentUser) {
+      alert("Faça login antes de agendar!");
+      return;
+    }
+
+    try {
+      await addDoc(collection(db, "bookings"), {
+        userId: auth.currentUser.uid,
+        userEmail: auth.currentUser.email,
+        barber: barber,
+        service: service,
+        date: date?.toISOString().split("T")[0],
+        time: time,
+        createdAt: new Date().toISOString(),
+      });
+
+      navigate("/Confirmation");
+    } catch (error) {
+      console.error("Erro ao salvar agendamento:", error);
+      alert("Erro ao salvar agendamento. Tente novamente.");
+    }
   };
 
   return (
@@ -65,12 +91,18 @@ const Booking = () => {
         })}
       </div>
       <div className="flex justify-center">
-        <ConfirmButton
-          onClick={() => {
-            navigate("/Confirmation");
-          }}
+        <button
+          onClick={handleBooking}
           disabled={!barber}
-        />
+          className={`bg-[#DEE6FF] border border-zinc-500/50 p-2 px-5 rounded-xl text-[#6E43F0] font-semibold
+      ${
+        !barber
+          ? "opacity-50 cursor-not-allowed"
+          : "hover:bg-[#bcc5e0] cursor-pointer"
+      }`}
+        >
+          Confirmar
+        </button>
       </div>
     </div>
   );
