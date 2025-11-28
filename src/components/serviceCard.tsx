@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useBooking } from "../context/BookingContext";
+import { useUser } from "../context/UserContext";
 
 interface ServiceCardProps {
   name: string;
@@ -16,6 +17,16 @@ const ServiceCard = ({
 }: ServiceCardProps) => {
   const { setService } = useBooking();
   const navigate = useNavigate();
+  const { user, loginWithGoogle } = useUser();
+
+  function handleReserve() {
+    if (user) {
+      navigate("/Times");
+    } else {
+      loginWithGoogle();
+    }
+  }
+
   return (
     <div className=" text-[#6E43F0] bg-white rounded-2xl p-2 shadow-md border-1 border-zinc-500/50 my-2 mx-3  flex flex-row justify-between gap-3">
       <div className="flex gap-3 flex-row">
@@ -31,10 +42,7 @@ const ServiceCard = ({
         </div>
       </div>
       <button
-        onClick={() => {
-          setService({ name });
-          navigate("/Times");
-        }}
+        onClick={handleReserve}
         className="bg-[#DEE6FF]  hover:bg-[#bcc5e0] cursor-pointer rounded-xl my-6 px-2 text-sm font-semibold border-1 border-zinc-500/50"
       >
         Reservar
