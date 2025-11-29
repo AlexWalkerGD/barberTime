@@ -7,6 +7,7 @@ import Title from "../components/title";
 import { db } from "../firebase";
 import { collection, addDoc } from "firebase/firestore";
 import { auth } from "../firebase";
+import toast from "react-hot-toast";
 
 const Booking = () => {
   const { service, date, time, barber, setBarber } = useBooking();
@@ -22,7 +23,7 @@ const Booking = () => {
 
   const handleBooking = async () => {
     if (!auth.currentUser) {
-      alert("Faça login antes de agendar!");
+      toast.error("Faça login antes de agendar!");
       return;
     }
 
@@ -37,10 +38,20 @@ const Booking = () => {
         createdAt: new Date().toISOString(),
       });
 
+      toast.success("Reserva confirmada com sucesso! 🎉", {
+        duration: 4000,
+        position: "bottom-center",
+        style: {
+          background: "#6E43F0",
+          color: "#fff",
+          fontWeight: "bold",
+        },
+      });
+
       navigate("/Confirmation");
     } catch (error) {
       console.error("Erro ao salvar agendamento:", error);
-      alert("Erro ao salvar agendamento. Tente novamente.");
+      toast.error("Ocorreu um erro ao salvar a reserva.");
     }
   };
 

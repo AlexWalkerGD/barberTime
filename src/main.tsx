@@ -11,6 +11,19 @@ import Confirmation from "./routes/Confirmation.tsx";
 import { BookingProvider } from "./context/BookingContext";
 import { UserProvider } from "./context/UserContext";
 import PrivateRoute from "./routes/PrivateRoute";
+import AdminDashboard from "./routes/AdminDashboard.tsx";
+import { useUser } from "./context/UserContext";
+import { isAdmin } from "./utils/auth.ts";
+
+const ProtectedAdminRoute = ({ children }: { children: JSX.Element }) => {
+  const { user } = useUser();
+
+  if (!user) return <p>Faça login para acessar.</p>;
+  if (!isAdmin(user))
+    return <p>Você não tem permissão para acessar esta página.</p>;
+
+  return children;
+};
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -27,6 +40,15 @@ createRoot(document.getElementById("root")!).render(
                   <PrivateRoute>
                     <Times />
                   </PrivateRoute>
+                }
+              />
+
+              <Route
+                path="/admin"
+                element={
+                  <ProtectedAdminRoute>
+                    <AdminDashboard />
+                  </ProtectedAdminRoute>
                 }
               />
               <Route
