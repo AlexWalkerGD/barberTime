@@ -4,11 +4,13 @@ import { useNavigate } from "react-router-dom";
 import { WEEK_DAYS } from "../utils/constants";
 import Title from "../components/title";
 import ConfirmButton from "../components/confirmButton";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { collection, addDoc, getDocs, query, where } from "firebase/firestore";
 import { db } from "../firebase";
+import { auth } from "../firebase";
+import toast from "react-hot-toast";
 
 const Times = () => {
-  const { date, setDate, time, setTime } = useBooking();
+  const { date, setDate, time, setTime, barber, service } = useBooking();
   const [selected, setSelected] = useState("");
   const [bookedTimes, setBookedTimes] = useState<string[]>([]);
 
@@ -20,6 +22,41 @@ const Times = () => {
     day.setDate(today.getDate() + i);
     return day;
   });
+
+  const handleBooking = async () => {
+    if (!auth.currentUser) {
+      toast.error("Faça login antes de agendar!");
+      return;
+    }
+
+    try {
+      await addDoc(collection(db, "bookings"), {
+        userId: auth.currentUser.uid,
+        userEmail: auth.currentUser.email,
+        userName: auth.currentUser.displayName,
+        barber: barber,
+        service: service,
+        date: date?.toISOString().split("T")[0],
+        time: time,
+        createdAt: new Date().toISOString(),
+      });
+
+      toast.success("Reserva confirmada com sucesso! 🎉", {
+        duration: 4000,
+        position: "bottom-center",
+        style: {
+          background: "#6E43F0",
+          color: "#fff",
+          fontWeight: "bold",
+        },
+      });
+
+      navigate("/Confirmation");
+    } catch (error) {
+      console.error("Erro ao salvar agendamento:", error);
+      toast.error("Ocorreu um erro ao salvar a reserva.");
+    }
+  };
 
   const TIME_LIST = [
     "10:00",
@@ -45,7 +82,8 @@ const Times = () => {
       try {
         const q = query(
           collection(db, "bookings"),
-          where("date", "==", dateKey)
+          where("date", "==", dateKey),
+          where("barber", "==", barber)
         );
 
         const querySnapshot = await getDocs(q);
@@ -90,6 +128,8 @@ const Times = () => {
     return true;
   });
 
+  const isDayFullyBooked = availableTimes.length === 0;
+
   return (
     <div>
       <Title />
@@ -129,31 +169,37 @@ const Times = () => {
       </p>
 
       <div className="border border-zinc-500/50 rounded-2xl py-7 mx-5 flex flex-col gap-3">
-        {availableTimes.map((t) => {
-          const isSelected = selected === t;
+        {isDayFullyBooked ? (
+          <p className="text-center text-zinc-500 font-medium">
+            Não existem horários disponíveis para este dia
+          </p>
+        ) : (
+          availableTimes.map((t) => {
+            const isSelected = selected === t;
 
-          return (
-            <div
-              key={t}
-              onClick={() => {
-                setSelected(t);
-                setTime(t);
-              }}
-              className={`rounded-xl border p-2 mx-3 font-semibold transition-all
+            return (
+              <div
+                key={t}
+                onClick={() => {
+                  setSelected(t);
+                  setTime(t);
+                }}
+                className={`rounded-xl border p-2 mx-3 font-semibold transition-all
           ${
             isSelected
               ? "bg-[#6E43F0] text-white border-[#6E43F0] scale-[1.03] shadow-lg"
               : "bg-white text-[#6E43F0] border-zinc-500/50 cursor-pointer"
           }`}
-            >
-              <p>{t}</p>
-            </div>
-          );
-        })}
+              >
+                <p>{t}</p>
+              </div>
+            );
+          })
+        )}
       </div>
 
       <div className="flex justify-center">
-        <ConfirmButton disabled={!time} onClick={() => navigate("/Bookings")} />
+        <ConfirmButton disabled={!time} onClick={handleBooking} />
       </div>
     </div>
   );

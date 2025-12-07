@@ -21,58 +21,12 @@ const Booking = () => {
     setBarber(name);
   };
 
-  const handleBooking = async () => {
-    if (!auth.currentUser) {
-      toast.error("Faça login antes de agendar!");
-      return;
-    }
-
-    try {
-      await addDoc(collection(db, "bookings"), {
-        userId: auth.currentUser.uid,
-        userEmail: auth.currentUser.email,
-        barber: barber,
-        service: service,
-        date: date?.toISOString().split("T")[0],
-        time: time,
-        createdAt: new Date().toISOString(),
-      });
-
-      toast.success("Reserva confirmada com sucesso! 🎉", {
-        duration: 4000,
-        position: "bottom-center",
-        style: {
-          background: "#6E43F0",
-          color: "#fff",
-          fontWeight: "bold",
-        },
-      });
-
-      navigate("/Confirmation");
-    } catch (error) {
-      console.error("Erro ao salvar agendamento:", error);
-      toast.error("Ocorreu um erro ao salvar a reserva.");
-    }
-  };
-
   return (
     <div className="text-[#6E43F0]">
       <Title />
-      <h2 className="flex pl-5 pt-10 italic text-lg text-[#858585]">
+      <h2 className="flex pt-10 italic text-lg justify-center text-[#858585]">
         Seu agendamento
       </h2>
-      <div className=" border border-zinc-500/50 rounded-2xl mx-3 py-5 mt-2 flex flex-row justify-between">
-        <div className=" pl-3 ">
-          <p>{WEEK_NAMES[date?.getDay() || 0]}</p>
-          <p>
-            {formatFullDate(date)} - às {time} horas
-          </p>
-          <p>Pagamento em loja.</p>
-        </div>
-        <div className="pr-3 flex items-end ">
-          <img src="/confirmLogo.png" alt="" width={40} />
-        </div>
-      </div>
 
       <p className="pt-16 text-center text-lg pb-2  font-medium ">
         Escolha o barbeiro
@@ -103,7 +57,7 @@ const Booking = () => {
       </div>
       <div className="flex justify-center">
         <button
-          onClick={handleBooking}
+          onClick={() => navigate("/Times")}
           disabled={!barber}
           className={`bg-[#DEE6FF] border border-zinc-500/50 p-2 px-5 rounded-xl text-[#6E43F0] font-semibold
       ${

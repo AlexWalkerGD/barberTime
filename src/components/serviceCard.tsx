@@ -21,7 +21,7 @@ const ServiceCard = ({
 
   function handleReserve() {
     if (user) {
-      navigate("/Times");
+      navigate("/Bookings");
       setService(name);
     } else {
       loginWithGoogle();
